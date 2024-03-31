@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TTT">
+    <output-path>E:/TTT</output-path>
+    <root id="archive" name="TTT.jar">
+      <element id="module-output" name="SEX" />
+    </root>
+  </artifact>
+</component>
