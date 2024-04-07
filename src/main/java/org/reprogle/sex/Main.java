@@ -6,7 +6,8 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.google.inject.Inject;
 import lombok.Getter;
-import org.slf4j.Logger;
+
+import java.util.logging.Logger;
 
 @Plugin(
         id = "sex",
