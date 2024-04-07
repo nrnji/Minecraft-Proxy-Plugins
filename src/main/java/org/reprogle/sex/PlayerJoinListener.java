@@ -22,6 +22,7 @@ public class PlayerJoinListener {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
         DBConnect dbc = new DBConnect();
+        dbc.dbConnection();
         String sendServer = dbc.Query(event.getPlayer().getUsername());
 
         if (sendServer == null)
