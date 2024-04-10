@@ -11,28 +11,40 @@ import java.util.concurrent.TimeUnit;
 
 public class PlayerJoinListener {
 
-    private final ProxyServer server;
+    private final ProxyServer server;  // 프록시 서버
+    private final DBConnect dbc;  // 데이터베이스 연결
+    private final ScheduledExecutorService executor;  // 스케줄링을 위한 실행자 서비스
 
     public PlayerJoinListener(ProxyServer server) {
         this.server = server;
+        this.dbc = new DBConnect();  // DB 연결 객체 생성
+        this.dbc.dbConnection();  // DB 연결
+        this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
     @Subscribe
     public void onPlayerJoin(ServerPostConnectEvent event) {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        String username = event.getPlayer().getUsername();  // 사용자 이름 가져오기
 
-        DBConnect dbc = new DBConnect();
-        dbc.dbConnection();
-        String sendServer = dbc.Query(event.getPlayer().getUsername());
-
-        if (sendServer == null)
+        String returnValue = dbc.getCheckGLEE(username);  // GLEE 체크
+        if (returnValue != null) {
+            scheduleCommand(returnValue);
             return;
+        }
 
-        executor.schedule(() -> {
-            server.getCommandManager().executeAsync(server.getConsoleCommandSource(), "send " + event.getPlayer().getUsername() + " " + sendServer);
-        }, 5, TimeUnit.SECONDS);  // 5초 후에 실행
-
-        executor.shutdown();
+        String sendServer = dbc.Query(username); // 일반 쿼리 실행
+        if (sendServer != null) {
+            scheduleCommand("send " + username + " " + sendServer);
+        }
     }
 
+    private void scheduleCommand(String command) {
+        executor.schedule(() -> {
+            server.getCommandManager().executeAsync(server.getConsoleCommandSource(), command);
+        }, 5, TimeUnit.SECONDS);  // 5초 후에 실행
+    }
+
+    public void shutdown() {
+        executor.shutdown();
+    }
 }
