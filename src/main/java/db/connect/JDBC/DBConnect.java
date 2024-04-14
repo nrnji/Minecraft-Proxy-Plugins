@@ -3,6 +3,7 @@ package db.connect.JDBC;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import porie.console.log.LogMessage;
 
 import javax.swing.*;
 import java.sql.*;
@@ -35,9 +36,8 @@ public class DBConnect {
             connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
             dbconn = connection;
 
-            System.out.println("DB Connection [성공]");
-
-            System.out.println(getCheckGLEE("planguage6"));
+            LogMessage.logMessage("DB Connection [성공]");
+//            LogMessage.logMessage(getCheckGLEE("planguage4"));
         }
         catch (Exception e)
         {
@@ -47,34 +47,25 @@ public class DBConnect {
 
     public String Query(String nickname) {
 
-        String sql = String.format(
-                "select " +
-                "s.server_name " +
-                "from PLER p inner join servers s " +
-                "on p.id = s.pler_id " +
-                "where p.username = ?"
-        );
+        String sql = "select s.server_name from PLER p inner join servers s on p.id = s.pler_id where LOWER(p.username) = LOWER(?) and s.status IN ('live', 'err')";
 
-        String result = null;
-
-        try {
-            PreparedStatement pstmt = dbconn.prepareStatement(sql);
+        try (PreparedStatement pstmt = dbconn.prepareStatement(sql)) {
             pstmt.setString(1, nickname);
 
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next())
-                result = rs.getString(1);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next())
+                    return rs.getString(1);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        return result;
+        return null;
     }
 
     public String getCheckGLEE(String nickname) {
         String userQuery = "select id from pl_user where LOWER(username) = LOWER(?)";
-        String serverQuery = "select s.server_name, p.username from servers s inner join pler p on s.pler_id = p.id where s.pler_id between 90 and 92 and s.status IN('live','err')";
+        String serverQuery = "select s.server_name, p.username from servers s inner join pler p on s.pler_id = p.id where s.pler_id between 90 and 92 and s.status IN('live','err') order by s.id asc";
         String gleeQuery = "select glee1, glee2, glee3 from pl_user where LOWER(username) = LOWER(?)";
 
         try {

@@ -4,6 +4,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.proxy.ProxyServer;
 import db.connect.JDBC.DBConnect;
+import porie.console.log.LogMessage;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,13 +29,16 @@ public class PlayerJoinListener {
 
         String returnValue = dbc.getCheckGLEE(username);  // GLEE 체크
         if (returnValue != null) {
+            LogMessage.logMessage(returnValue);
             scheduleCommand(returnValue);
             return;
         }
 
         String sendServer = dbc.Query(username); // 일반 쿼리 실행
         if (sendServer != null) {
+            LogMessage.logMessage("send " + username + " " + sendServer);
             scheduleCommand("send " + username + " " + sendServer);
+
         }
     }
 
